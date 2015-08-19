@@ -1,0 +1,40 @@
+Title
+
+Introduction To DevOps For Web Developers - A description and demonstration, emphasizing Docker, including a Docker container deployment to Amazon Web Services.
+
+
+TL;DR
+
+A two-part presentation.  1) High-level introduction to DevOps what, why, and how. 2) A scripted sprint through the process of building a trivial web page, (along with its Apache HTTP server), into a Docker container, and then deploying that container to Amazon Web Services.
+
+
+About This Presentation
+
+A large number of Web applications companies are embracing strategies and techniques often referred to by the umbrella-term "DevOps".  That number of companies will only grow.  It is just a matter of time before you as a developer will be using those techniques, implementing those strategies.  As a software developer, you need to be productive quickly when you join projects which use DevOps techniques.  This presentation is a heads-up, a brief introduction to some of those techniques.
+
+Deploying reliable Web applications and their updates, reliably and frequently, is a "hard problem".  One strategy aimed at reducing the difficulty of deploying Web application software and its updates is named Microservices Architecture.  Microservices Architecture is a strategy and analysis-design concept, not an implementation.
+
+A software technology which lends itself well to implementing Microservices Architecture is "containers".  There are many kinds of containers.  Docker is one of the container technologies.  But, Docker is not just a container, it is much more.  When you understand HOW you can use Docker for project development, you will understand WHY many companies are now, or will be, using Docker.
+
+The presentation is comprised of two parts.  The first part is a very brief introduction to DevOps, Microservices Architecture, Docker, and Amazon Web Services (AWS).
+
+The second part is a live demo of how to use Docker to deploy a very simple PHP web app to AWS.  We will go from "Zero to AWS" of a "Hello World" web page, live demonstrating the following:
+
+*  Install Docker on a Linux box
+*  Create a simple web app, (a "Hello World" website), consisting of one container
+*  Perform simple tests to verify its operation
+*  Deploy our "Hello World" website to an Amazon Web Services EC2 instance
+*  Perform a simple test of the AWS deploy
+
+Intended Audience, Pre-requisites:  The example web page uses trivial PHP code, but, the principles described and the demo are applicable to any programming language.  Pre-requisites for understanding this presentation are knowledge of:
+
+*  Basic computer concepts, such as CPU, memory, and storage
+*  Basic Linux OS concepts and some common Bash commands
+*  Basic Web technology, networks fundamentals, and client-server concept
+*  Trivial HTML and PHP
+
+
+About Rex Addiscentis
+
+Rex has developed hardware and software for applications in communications, business, and SCADA.  In addition to programming, Rex has managed teams of programmers.  Programming languages used include high level languages and assembly languages.  Delivery ecosystems include Web, native hardware, Linux, and Windows.  Rex's current focus is to continue learning and teaching "The Way of DevOps".
+

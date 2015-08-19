@@ -1,0 +1,393 @@
+===========================   Presentation Title   ===========================
+
+Introduction To DevOps For Web Developers - A description and demonstration
+    emphasizing Docker, incorporating simple PHP example code.
+
+                      2015/08/16 Rex Addiscentis
+                      raddiscentis@addiscent.com
+
+====================
+       DEMO
+====================
+
+2m    State the Given to audience :
+        * Demo is done in a terminal session logged-in to a Vagrant VBox
+        * Host OS on VBox is Ubuntu Server 14.04.3
+        * User name is "vagrant"
+        * Time shown in terminal prompt is UTC date-time, not local
+        * "Docker Engine" is already installed, (docker.com > Docs > Install)
+        * "Docker Machine" is already installed, (docker.com > Docs > Install)
+        * "curl" fetches content from URI, (localhost or Internet)
+        * Local host is our dev and test environment
+        * AWS EC2 instance is our "ops" production deployment host
+
+30s   Quick-test Docker installation :
+
+        $ docker --version
+          -> Docker version 1.8.1, build d12ea79
+
+        $ docker-machine --version
+          -> docker-machine version 0.4.0 (9d0dc7a)
+
+        $ aws --version
+          ->aws-cli/1.7.45 Python/2.7.6 Linux/3.13.0-61-generic
+
+3m    Does the docker client work? :
+
+        # container is "pulled", process runs, and container is "done"
+        $ docker run hello-world
+
+        * Discuss Foreground vs background execution WRT Docker
+
+1m    Basic wrangling of containers and images :
+        * Note fields names
+
+        $ docker ps  # list all "running" docker processes (none at this time)
+
+        $ docker ps -a   # list all "run" containers
+
+        $ docker ps -l    # list most recently "run" container
+
+        $ docker images   # list images stored locally
+
+30s   Naming containers :
+
+        $ docker run --name rex-says-hello hello-world
+
+        $ docker ps -l
+
+1m    Taking out the garbage containers:
+
+        # remove "rex-says-hello" from containers list
+        $ docker rm rex-says-hello
+
+        # list all "run" containers, (still shows "hello-world")
+        $ docker ps -a
+
+        $ docker rm 5aea7d15783f    # (hello-world)
+
+        # list all "run" containers, (list is now "empty")
+        $ docker ps -a
+
+        $ docker run --rm hello-world   # removed from list when "done"
+
+        $ docker ps -a    # list all, (list is now "empty")
+
+1m    Removing unnecessary images :
+        * Note: Docker images are stored locally in /var/lib/docker, (not your pwd)
+
+        $ docker images   # list images stored locally
+
+        $ docker rmi hello-world:latest  # tag is used in this example
+
+        $ docker images   # list images stored locally, (list is now *empty*)
+
+2m    Docker Hub (Respositories) :
+
+        Search available images for desirable candidates
+          hub.docker.com =>
+          Search : PHP =>
+          PHP :
+            With Apache
+
+      Construct "Docker PHP Web App" in a project home directory :
+
+1m        # creates project home directory "docker-php-webapp"
+          # creates project source file sub-dir "src" in project dir
+          # makes project home dirctory the "pwd" (current working dir)
+          $ mkdir -p docker-php-webapp/src && cd docker-php-webapp && ls -al
+
+1m      Place an HTML-PHP page into "src" sub-dir. Represents project source files :
+
+          $ curl http://dalorweb.com/php-hello-world.txt > src/index.php
+
+          $ cat src/index.php
+
+2m      Create a Dockerfile used by docker engine to build docker image (container) :
+
+          * Browse to https://docs.docker.com/reference/builder/ - Discuss...
+
+          # start creating a Dockerfile
+          $ echo "FROM php:5.6-apache" > Dockerfile
+
+          # copy Hello World PHP web page into Docker container
+          $ echo "COPY src/ /var/www/html/" >> Dockerfile
+
+          $ cat Dockerfile        # view the minimal Dockerfile
+
+1m      Build our Docker image :
+
+          $ docker pull php:5.6-apache
+
+          $ docker build -t docker-php-web-app .
+
+          $ docker images
+
+          * Our "docker-php-web-app" image is now in our local repository
+
+1m      Run our docker image with container port mapped to host port :
+
+          $ docker run -d \
+              --name running-php-web-app \
+              -p 80:80 \
+              docker-php-web-app
+
+          $ docker ps -l # inspect PORTS field, ports mapped ->
+
+          $ curl http://localhost
+
+          * View in Rex's browser localhost:8080 because container is on vagrant
+
+1m      Update website container :
+
+          $ nano src/index.php     # "from PdxDevOps meetup"
+
+          $ cat src/index.php      # "from PdxDevOps meetup"
+
+          $ docker build -t docker-php-web-app .
+
+          $ docker images  # confirm "docker-php-web-app" image touched
+
+          $ docker rm -f running-php-web-app
+
+          $ docker run -d \
+              --name running-php-web-app \
+              -p 80:80 \
+              docker-php-web-app
+
+          $ curl http://localhost      # "from PdxDevOps meetup"
+
+          * View in Rex's browser localhost:8080 because container is on vagrant
+
+1m      Commit our Docker image and Push it to our repository :
+          $ docker commit \
+              -m "Initial Example" \
+              -a "Rex Addiscentis" \
+              running-php-web-app \
+              raddiscentis/example-for-aws
+
+          $ docker images  # confirm new repository "raddiscentis/example-for-aws"
+
+30s     Pull and test from local images :
+
+          $ docker rm -f running-php-web-app
+
+          $ docker run -d \
+              --name running-php-web-app \
+              -p 80:80 \
+              raddiscentis/example-for-aws
+
+          $ curl http://localhost
+
+1m      Push to DockerHub :
+
+          $ docker login
+
+          $ docker push raddiscentis/example-for-aws
+
+          * View Repository in Browser
+
+      Deploy "Docker PHP Web App" onto AWS :
+1m      Create a docker-machine "node" (EC2 instance) as Docker Host :
+
+        !!! BEGIN - show example only, DO NOT EXECUTE DURING DEMO -- TIME SINK!
+
+          $ docker-machine -D create \
+            --driver amazonec2 \
+            --amazonec2-access-key $AWS_ACCESS_KEY_ID \
+            --amazonec2-secret-key $AWS_SECRET_ACCESS_KEY \
+            --amazonec2-vpc-id $AWS_VPC_ID \
+            --amazonec2-region $AWS_DEFAULT_REGION \
+            --amazonec2-zone $AWS_ZONE \
+            pdx-devops-test2
+
+        !!! END - show example only, DO NOT EXECUTE DURING DEMO -- TIME SINK!
+
+          $ docker-machine ls
+
+          $ docker-machine env pdx-devops-test2
+
+2m      Run Hello World website container on docker-machine node (EC2 instance) :
+
+          # set docker cli "env pointers"
+          $ eval "$(docker-machine env pdx-devops-test2)"
+
+          $ env | grep DOCKER
+
+          $ docker run -d \
+              --name running-php-web-app \
+              -p 80:80 \
+              raddiscentis/example-for-aws
+
+          # confirm EC2 instance may be accessed from Internet
+          $ aws ec2 describe-security-groups | grep ToPort
+
+          # if not already enabled, allow Internet access to port 80 on
+          #     the EC2 instance security group
+          #--$ aws ec2 authorize-security-group-ingress \
+                --group-name docker-machine \
+                --protocol tcp \
+                --port 80 \
+                --cidr 0.0.0.0/0
+
+          $ docker-machine ip pdx-devops-test2   # display IP address
+            -> 52.21.59.84
+
+          # stash IP address for future use by curl
+          $ export PDO_CURL_IP=$(docker-machine ip pdx-devops-test2)
+
+          $ curl http://$PDO_CURL_IP   # from PdxDevOps meetup
+
+          * View Hello World website in browser 52.21.59.84
+
+      Update Deployed "Docker PHP Web App" :
+1m      Update website container (but first, must dev locally) :
+
+          $ env | grep DOCKER
+
+          # clear docker env variables
+          $ eval "$(docker-machine env -u)"
+
+          $ env | grep DOCKER
+
+          $ nano ./src/index.php  # "and AWS"
+
+          $ cat ./src/index.php   # "and AWS"
+
+          $ docker build -t docker-php-web-app .
+
+          $ docker images  # verify image touched
+
+1m      Test source code revisions locally :
+
+          $ docker rm -f running-php-web-app
+
+          # run latest re-built container
+          $ docker run -d \
+              --name running-php-web-app \
+              -p 80:80 \
+              docker-php-web-app
+
+          $ curl http://localhost  # confirm " and AWS" revisions
+
+1m        $ docker commit \
+              -m "Another AWS Example" \
+              -a "Rex Addiscentis" \
+              running-php-web-app \
+              raddiscentis/example-for-aws
+
+          $ docker images   # confirm image touched
+
+          $ docker push raddiscentis/example-for-aws
+
+          # stop local host dev container
+          $ docker rm -f running-php-web-app # stop local dev container
+
+          $ curl http://localhost  # confirm fails as expected
+            -> curl: (7) Failed to connect to localhost port 80
+
+1m      Remove existing container on AWS EC2 instance :
+
+          # set docker cli "env pointers"
+          $ eval "$(docker-machine env pdx-devops-test2)"
+
+          $ env | grep DOCKER
+
+          $ docker rm -f running-php-web-app # delete web-app container on EC2
+
+2m      Restart updated Hub repo image to AWS EC2 instance :
+
+          $ docker pull raddiscentis/example-for-aws
+
+          $ docker run -d \
+              --name running-php-web-app \
+              -p 80:80 \
+              raddiscentis/example-for-aws
+
+          $ curl http://$PDO_CURL_IP  # confirm " and AWS"
+
+          * View Hello World website in browser 52.21.59.84
+
+1m      Demo cleanup - Tear down docker-machine (remove AWS EC2 instance) :
+
+          # kill the EC2 instance
+          $ docker-machine stop pdx-devops-test2
+
+          $ docker-machine ls
+
+          $ docker-machine rm pdx-devops-test2
+
+          # verify EC2 instace via AWS CLI
+          $ aws ec2 describe-instances | grep Value
+
+------  END OF DEMO  ------
+
+
+===============================================================================
+      Pre-Demo env startup checklist
+===============================================================================
+10m     * Connect to WIFI
+        * Browse hub.docker.com and docker.com
+        $ cddfpd    # cd to vagrant vbox demo dir
+        $ vagrant up
+        $ vagrant ssh
+
+        # test Internet connection
+        curl http://dalorweb.com/php-hello-world.txt
+
+        # delete project dev dir
+        sudo rm -rf ~/docker-php-webapp
+
+        # delete all docker containers/images from EC2 instance
+        docker-machine ls
+        eval "$(docker-machine env pdx-devops-test2)"
+        env | grep DOCKER  # confirm EC2 DOCKER variables
+        docker rm -f running-php-web-app
+        docker rmi $(docker images -q)
+
+        # delete all containers, DO NOT clear images
+        eval "$(docker-machine env -u)"
+        env | grep DOCKER  # confirm NO DOCKER env variables
+        docker rm $(docker ps -a -q)  # delete local host containers
+
+        # demo is no-go unless we have a php;5.6-apache image before demo start
+        docker pull php:5.6-apache
+
+-------------
+Misc Snippets
+-------------
+eval "$(docker-machine env pdx-devops-test2)"  # set docker cli "env pointers"
+eval "$(docker-machine env -u)"   # clear docker cli env variables
+
+eval "$(docker-machine env pdx-devops-test2)"  # point docker cli at EC2 inst
+env | grep DOCKER
+
+docker-machine ip pdx-devops-test2   # display IP address
+
+aws ec2 describe-security-groups | grep ToPort
+
+# Delete all containers
+docker rm $(docker ps -a -q)
+
+# Delete all images
+docker rmi $(docker images -q)
+
+# AWS EC2 instance
+docker-machine ssh pdx-devops-test2
+sudo usermod -aG docker ubuntu
+Logout and login
+
+# install docker
+$ curl -sSL https://get.docker.com/ | sh
+$ sudo usermod -aG docker vagrant
+
+# install docker-machine
+$ sudo -i
+# curl -L \
+    https://github.com/docker/machine/releases/download/v0.4.0/docker-machine_linux-amd64 \
+    > /usr/local/bin/docker-machine
+# chmod +x /usr/local/bin/docker-machine
+# exit
+
+Copyright 2015 Rex Addiscentis
+
